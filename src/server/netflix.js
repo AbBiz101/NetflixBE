@@ -31,7 +31,7 @@ netflixRounter.post('/', mediaValidator, async (req, res, next) => {
 			};
 			allMedias.push(newMedia);
 			await writeMedia(allMedias);
-			res.status(201).send('Media is successfully added to the database');
+			res.status(201).send(newMedia);
 		}
 	} catch (error) {
 		next(error);
@@ -62,6 +62,7 @@ netflixRounter.post('/:id/review', reviewValidator, async (req, res, next) => {
 			...req.body,
 			elementId: req.params.id,
 			_id: uniqid(),
+			createdAt: new Date(),
 		};
 		allReview.push(newReview);
 		await writeReviews(allReview);
