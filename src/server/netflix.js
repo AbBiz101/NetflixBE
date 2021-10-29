@@ -120,7 +120,12 @@ netflixRounter.put('/:id', async (req, res, next) => {
 
 netflixRounter.put('/:id/review', async (req, res, next) => {
 	try {
-		const allMedias = await getMedia();
+		const allReview = await getReviews();
+		const reviewIndex = allReview.findIndex((p) => p._iD !== req.params.id);
+		const updatedReview = { ...allReview[reviewIndex], ...req.body };
+		allReview[reviewIndex] = updatedReview;
+		await writeReviews(allReview);
+		res.send(updatedReview);
 	} catch (error) {
 		next(error);
 	}
