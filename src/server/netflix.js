@@ -43,8 +43,13 @@ netflixRounter.post(
 	multer({ storage: cloudinaryStorage }).single('Poster'),
 	async (req, res, next) => {
 		try {
-			console.log(req.file);
-			res.send('img uploded');
+			const allMedias = await getMedia();
+			const media = allMedias.find((p) => p.imdbID === req.params.id);
+			const mediaArr = allMedias.filter((p) => p.imdbID !== req.params.id);
+			media.Poster = req.file.path;
+			mediaArr.push(media);
+			await writeMedia(mediaArr);
+			res.send(media);
 		} catch (error) {
 			next(error);
 		}
@@ -129,15 +134,16 @@ netflixRounter.put('/:id/review', async (req, res, next) => {
 
 netflixRounter.put(
 	'/:id/poster',
-	multer({ storage: cloudinaryStorage }).single('moviePoster'),
+	multer({ storage: cloudinaryStorage }).single('Poster'),
 	async (req, res, next) => {
 		try {
 			const allMedias = await getMedia();
-			const mediaIndex = allMedias.findIndex((p) => p.imdbID === req.params.id);
-			const editedMedia = { ...allMedias[mediaIndex], Poster: req.file.path };
-			allMedias[mediaIndex] = editedMedia;
-			await writeMedia(allMedias);
-			res.send(editedMedia);
+			const media = allMedias.find((p) => p.imdbID === req.params.id);
+			const mediaArr = allMedias.filter((p) => p.imdbID !== req.params.id);
+			media.Poster = req.file.path;
+			mediaArr.push(media);
+			await writeMedia(mediaArr);
+			res.send(media);
 		} catch (error) {
 			next(error);
 		}
