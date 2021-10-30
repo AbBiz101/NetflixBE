@@ -26,5 +26,12 @@
 		"Type": "movie",
 		"Poster": "https://res.cloudinary.com/db8gmza63/image/upload/v1635619871/posters/klwpwhm7vqepwa1zzsdw.png",
 		"imdbID": "162lwuny0kve5tuo5"
+	},
+	{
+		"Title": "Palm Springs",
+		"Year": "2020",
+		"Type": "Movie",
+		"Poster": "https://res.cloudinary.com/db8gmza63/image/upload/v1635626066/posters/j2z4rpbhqsa20oxb8h8c.jpg",
+		"imdbID": "162lwujv0kve9j1tp"
 	}
 ]
