@@ -43,12 +43,8 @@ netflixRounter.post(
 	multer({ storage: cloudinaryStorage }).single('Poster'),
 	async (req, res, next) => {
 		try {
-			const allMedias = await getMedia();
-			const mediaIndex = allMedias.findIndex((p) => p.imdbID === req.params.id);
-			const editedMedia = { ...allMedias[mediaIndex], Poster: req.file.path };
-			allMedias[mediaIndex] = editedMedia;
-			await writeMedia(allMedias);
-			res.send(editedMedia);
+			console.log(req.file);
+			res.send('img uploded');
 		} catch (error) {
 			next(error);
 		}
