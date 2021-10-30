@@ -48,6 +48,7 @@ netflixRounter.post(
 			const mediaArr = allMedias.filter((p) => p.imdbID !== req.params.id);
 			media.Poster = req.file.path;
 			mediaArr.push(media);
+			console.log(media);
 			await writeMedia(mediaArr);
 			res.send(media);
 		} catch (error) {
