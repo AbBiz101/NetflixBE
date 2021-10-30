@@ -40,7 +40,7 @@ netflixRounter.post('/', mediaValidator, async (req, res, next) => {
 
 netflixRounter.post(
 	'/:id/poster',
-	multer({ storage: cloudinaryStorage }).single('moviePoster'),
+	multer({ storage: cloudinaryStorage }).single('Poster'),
 	async (req, res, next) => {
 		try {
 			const allMedias = await getMedia();

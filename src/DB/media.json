@@ -1,16 +1,1 @@
-[
-	{
-		"Title": "Run Hide Fight",
-		"Year": "2020",
-		"Type": "movie",
-		"Poster": "https://res.cloudinary.com/db8gmza63/image/upload/v1635512106/posters/zhrm9o1rcvoa5fwoajm6.jpg",
-		"imdbID": "162lwu5e0kvcdlrlj"
-	},
-	{
-		"Title": "Bloodshot",
-		"Year": "2020",
-		"Type": "movie",
-		"Poster": "https://res.cloudinary.com/db8gmza63/image/upload/v1635512218/posters/sxfirryptqhsf6jnvmxk.jpg",
-		"imdbID": "162lwuke4kvcdpz1f"
-	}
-]
+[{"Title":"Run Hide Fight","Year":"2020","Type":"movie","Poster":"https://res.cloudinary.com/db8gmza63/image/upload/v1635512106/posters/zhrm9o1rcvoa5fwoajm6.jpg","imdbID":"162lwu5e0kvcdlrlj"},{"Title":"Bloodshot","Year":"2020","Type":"movie","Poster":"https://res.cloudinary.com/db8gmza63/image/upload/v1635512218/posters/sxfirryptqhsf6jnvmxk.jpg","imdbID":"162lwuke4kvcdpz1f"}]
