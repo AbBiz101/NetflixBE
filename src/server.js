@@ -25,8 +25,8 @@ const corsOpt = {
 server.use(cors(corsOpt));
 server.use(express.json());
 
-server.use('/netflix/media', netflixRounter);
-server.use('/netflix/media', netflixRounter);
+server.use('/media', netflixRounter);
+server.use('/media', netflixRounter);
 
 server.use(badRequestHandler);
 server.use(unAuterizedHandler);
