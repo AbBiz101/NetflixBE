@@ -24,8 +24,6 @@ export const readReviewsStream = () => createReadStream(reviewsJSON);
 
 /********************************pdf****************************************/
 
-export const pdfMediaStream = () => {};
-
 const fonts = {
 	Helvetica: {
 		normal: 'Helvetica',
@@ -33,6 +31,17 @@ const fonts = {
 	},
 };
 const printer = new PdfPrinter(fonts);
+
+export const pdfReviewStreaming = (data) => { };
+
+export const pdfMediaStreaming = (data) => {};
+
+
+
+
+
+
+
 
 export const generetPDFMediafile = async (data) => {
 	let imagePart = {};
@@ -73,9 +82,6 @@ export const generetPDFMediafile = async (data) => {
 	return pdfMedia;
 };
 
-//pipeline(pdfMedia, createWriteStream('media.pdf'));
-//pdfMedia.end();
-
 export const generatePDFAsync = async (data) => {
 	const asyncPipeline = promisify(pipeline); // promisify is a (VERY COOL) utility which transforms a function that uses callbacks (error-first callbacks) into a function that uses Promises (and so Async/Await). Pipeline is a function that works with callbacks to connect 2 or more streams together --> I can promisify a pipeline getting back and asynchronous pipeline
 
@@ -107,8 +113,8 @@ export const generatePDFAsync = async (data) => {
 	const pdfReadableStream = printer.createPdfKitDocument(
 		docDefinition,
 		options,
-    );
-    
+	);
+
 	// pdfReadableStream.pipe(fs.createWriteStream('document.pdf')); // old syntax for piping
 	// pipeline(pdfReadableStream, fs.createWriteStream('document.pdf')) // new syntax for piping (we don't want to pipe pdf into file on disk right now)
 	pdfReadableStream.end();
@@ -117,4 +123,3 @@ export const generatePDFAsync = async (data) => {
 	return path;
 };
 
-// promisify = () => new Promise((res, rej) => pipeline())

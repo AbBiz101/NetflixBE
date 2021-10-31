@@ -1,13 +1,3 @@
-import multer from 'multer';
-import uniqid from 'uniqid';
-import { createGzip } from 'zlib';
-import express from 'express';
-import { pipeline } from 'stream';
-import createHttpError from 'http-errors';
-import { v2 as cloudinary } from 'cloudinary';
-import { validationResult } from 'express-validator';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import { mediaValidator, reviewValidator } from '../server/validator.js';
 import {
 	getMedia,
 	getReviews,
@@ -15,12 +5,18 @@ import {
 	writeReviews,
 	readMediaStream,
 	readReviewsStream,
-	pdfMediaStream,
 	generetPDFMediafile,
 } from '../fs-tools.js';
-import PdfPrinter from 'pdfmake';
-import striptags from 'striptags';
-import axios from 'axios';
+import multer from 'multer';
+import uniqid from 'uniqid';
+import express from 'express';
+import { pipeline } from 'stream';
+import { createGzip } from 'zlib';
+import createHttpError from 'http-errors';
+import { v2 as cloudinary } from 'cloudinary';
+import { validationResult } from 'express-validator';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { mediaValidator, reviewValidator } from '../server/validator.js';
 
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
@@ -194,15 +190,20 @@ netflixRounter.get('/download/JSON', async (req, res, next) => {
 	}
 });
 
-netflixRounter.get('/:id/pdf', async (req, res, next) => {
+netflixRounter.get('/download/reviews/JSON', async (req, res, next) => {
 	try {
-		const allMedias = await getMedia();
-		const [singleMedias] = allMedias.filter((p) => p.imdbID === req.params.id);
+		res.setHeader(
+			'Content-Disposition',
+			'attachment; filename=All_Reviews.json',
+		);
 
-		const pdfStream = await generetPDFMediafile(singleMedias);
-		res.setHeader('Content-Type', 'application/pdf');
-		pdfStream.pipe(res);
-		pdfStream.end();
+		const source = readReviewsStream();
+		const transform = createGzip(); // if u want to make it comprossed file add this =>  filename=All_Medias.json.gz  and (source,transform ,destination,)
+		const destination = res;
+
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -211,13 +212,45 @@ netflixRounter.get('/:id/pdf', async (req, res, next) => {
 netflixRounter.get('/download/PDF', (req, res, next) => {
 	try {
 		res.setHeader('Content-Disposition', 'attachment; filename=All_Medias.pdf');
-
-		const source = pdfMediaStream();
+		const source = readMediaStream();
 		const destination = res;
 
 		pipeline(source, destination, (err) => {
 			if (err) next(err);
 		});
+	} catch (error) {
+		next(error);
+	}
+});
+
+netflixRounter.get('/download/review/PDF', (req, res, next) => {
+	try {
+		res.setHeader('Content-Disposition', 'attachment; filename=All_Review.pdf');
+		const source = readReviewsStream();
+		const destination = res;
+
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
+	} catch (error) {
+		next(error);
+	}
+});
+
+netflixRounter.get('/:id/pdf', async (req, res, next) => {
+	try {
+		const allMedias = await getMedia();
+		const [singleMedias] = allMedias.filter((p) => p.imdbID === req.params.id);
+		const source = await generetPDFMediafile(singleMedias);
+		const destination = res;
+		res.setHeader(
+			'Content-Disposition',
+			`attachment; filename=${req.params.id}.pdf`,
+		);
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
+		source.end();
 	} catch (error) {
 		next(error);
 	}
