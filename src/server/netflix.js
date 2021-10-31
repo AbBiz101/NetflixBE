@@ -17,6 +17,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { validationResult } from 'express-validator';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { mediaValidator, reviewValidator } from '../server/validator.js';
+import json2csv from 'json2csv';
 
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
@@ -24,13 +25,6 @@ const cloudinaryStorage = new CloudinaryStorage({
 		folder: 'posters',
 	},
 });
-
-const fonts = {
-	Helvetica: {
-		normal: 'Helvetica',
-		bold: 'Helvetica-Bold',
-	},
-};
 
 const netflixRounter = express.Router();
 
@@ -190,6 +184,37 @@ netflixRounter.get('/download/JSON', async (req, res, next) => {
 	}
 });
 
+netflixRounter.get('/download/PDF', (req, res, next) => {
+	try {
+		res.setHeader('Content-Disposition', 'attachment; filename=All_Medias.pdf');
+		const source = readMediaStream();
+		const destination = res;
+
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
+	} catch (error) {
+		next(error);
+	}
+});
+
+netflixRounter.get('/download/CSV', (req, res, next) => {
+	try {
+		res.setHeader('Content-Disposition', 'attachment; filename=All_Medias.csv');
+		const source = readMediaStream();
+		const transform = new json2csv.Transform({
+			fields: ['Title', 'Year', 'Type'],
+		});
+		const destination = res;
+
+		pipeline(source, transform, destination, (err) => {
+			if (err) next(err);
+		});
+	} catch (error) {
+		next(error);
+	}
+});
+
 netflixRounter.get('/download/reviews/JSON', async (req, res, next) => {
 	try {
 		res.setHeader(
@@ -209,10 +234,10 @@ netflixRounter.get('/download/reviews/JSON', async (req, res, next) => {
 	}
 });
 
-netflixRounter.get('/download/PDF', (req, res, next) => {
+netflixRounter.get('/download/review/PDF', (req, res, next) => {
 	try {
-		res.setHeader('Content-Disposition', 'attachment; filename=All_Medias.pdf');
-		const source = readMediaStream();
+		res.setHeader('Content-Disposition', 'attachment; filename=All_Review.pdf');
+		const source = readReviewsStream();
 		const destination = res;
 
 		pipeline(source, destination, (err) => {
@@ -223,13 +248,19 @@ netflixRounter.get('/download/PDF', (req, res, next) => {
 	}
 });
 
-netflixRounter.get('/download/review/PDF', (req, res, next) => {
+netflixRounter.get('/download/review/CSV', (req, res, next) => {
 	try {
-		res.setHeader('Content-Disposition', 'attachment; filename=All_Review.pdf');
+		res.setHeader(
+			'Content-Disposition',
+			'attachment; filename=All_Reviews.csv',
+		);
 		const source = readReviewsStream();
+		const transform = new json2csv.Transform({
+			fields: ['comment', 'rate', 'elementId', 'createdAt'],
+		});
 		const destination = res;
 
-		pipeline(source, destination, (err) => {
+		pipeline(source, transform, destination, (err) => {
 			if (err) next(err);
 		});
 	} catch (error) {
