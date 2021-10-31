@@ -6,6 +6,8 @@ import striptags from 'striptags';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import axios from 'axios';
+import sgMail from '@sendgrid/mail';
+
 const { readJSON, writeJSON, writeFile, createReadStream, createWriteStream } =
 	fs;
 const dataJSON = join(dirname(fileURLToPath(import.meta.url)), '../src/DB');
@@ -32,16 +34,9 @@ const fonts = {
 };
 const printer = new PdfPrinter(fonts);
 
-export const pdfReviewStreaming = (data) => { };
+export const pdfReviewStreaming = () => {};
 
-export const pdfMediaStreaming = (data) => {};
-
-
-
-
-
-
-
+export const pdfMediaStreaming = () => {};
 
 export const generetPDFMediafile = async (data) => {
 	let imagePart = {};
@@ -83,18 +78,15 @@ export const generetPDFMediafile = async (data) => {
 };
 
 export const generatePDFAsync = async (data) => {
-	const asyncPipeline = promisify(pipeline); // promisify is a (VERY COOL) utility which transforms a function that uses callbacks (error-first callbacks) into a function that uses Promises (and so Async/Await). Pipeline is a function that works with callbacks to connect 2 or more streams together --> I can promisify a pipeline getting back and asynchronous pipeline
-
 	const fonts = {
 		Helvetica: {
 			normal: 'Helvetica',
 			bold: 'Helvetica-Bold',
-			// italics: "fonts/Roboto-Italic.ttf",
-			// bolditalics: "fonts/Roboto-MediumItalic.ttf",
 		},
 	};
-
 	const printer = new PdfPrinter(fonts);
+
+	const asyncPipeline = promisify(pipeline);
 
 	const docDefinition = {
 		content: [
@@ -103,23 +95,29 @@ export const generatePDFAsync = async (data) => {
 		defaultStyle: {
 			font: 'Helvetica',
 		},
-		// ...
 	};
 
-	const options = {
-		// ...
-	};
-
-	const pdfReadableStream = printer.createPdfKitDocument(
-		docDefinition,
-		options,
-	);
-
-	// pdfReadableStream.pipe(fs.createWriteStream('document.pdf')); // old syntax for piping
-	// pipeline(pdfReadableStream, fs.createWriteStream('document.pdf')) // new syntax for piping (we don't want to pipe pdf into file on disk right now)
+	const pdfReadableStream = printer.createPdfKitDocument(docDefinition);
 	pdfReadableStream.end();
 	const path = join(dirname(fileURLToPath(import.meta.url)), 'example.pdf');
 	await asyncPipeline(pdfReadableStream, fs.createWriteStream(path));
 	return path;
 };
 
+/********************************email****************************************/
+
+sgMail.setApiKey(process.env.SENDGRID_KEY);
+
+export const sendRegistrationEmail = async (reciveraddress) => {
+	const msg = {
+		to: reciveraddress,
+		from: process.env.SENDERS_ADDRESS,
+		cc: process.env.SENDERS_ADDRESS,
+		subject: 'Registration',
+		text: 'Registration confermation',
+		html: '<strong> lol.com/lol</strong>',
+	};
+	await sgMail.send(msg);
+};
+
+/********************************email****************************************/

@@ -6,6 +6,8 @@ import {
 	readMediaStream,
 	readReviewsStream,
 	generetPDFMediafile,
+	sendRegistrationEmail,
+	//generatePDFAsync,
 } from '../fs-tools.js';
 import multer from 'multer';
 import uniqid from 'uniqid';
@@ -19,6 +21,10 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { mediaValidator, reviewValidator } from '../server/validator.js';
 import json2csv from 'json2csv';
 
+import { promisify } from 'util';
+import fs from 'fs-extra';
+const { readJSON, writeJSON, writeFile, createReadStream, createWriteStream } =
+	fs;
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
 	params: {
@@ -175,7 +181,6 @@ netflixRounter.get('/download/JSON', async (req, res, next) => {
 		const source = readMediaStream();
 		const transform = createGzip(); // if u want to make it comprossed file add this =>  filename=All_Medias.json.gz  and (source,transform ,destination,)
 		const destination = res;
-
 		pipeline(source, destination, (err) => {
 			if (err) next(err);
 		});
@@ -284,6 +289,7 @@ netflixRounter.get('/:id/pdf', async (req, res, next) => {
 		source.end();
 	} catch (error) {
 		next(error);
+		console.log(error);
 	}
 });
 
@@ -310,5 +316,58 @@ netflixRounter.delete('/:id/review', async (req, res, next) => {
 		next(error);
 	}
 });
+
+//.............................emailing .......................................
+
+netflixRounter.post('/register', async (req, res, next) => {
+	try {
+		const { email } = req.body;
+		await sendRegistrationEmail(email);
+		res.send('Email sussesfully sent');
+	} catch (error) {
+		next(error);
+		console.log(error);
+	}
+});
+
+////////////////////////////////////////////
+const generatePDFAsync = async () => {
+	const fonts = {
+		Helvetica: {
+			normal: 'Helvetica',
+			bold: 'Helvetica-Bold',
+		},
+	};
+	const printer = new PdfPrinter(fonts);
+	const asyncPipeline = promisify(pipeline);
+	const docDefinition = {
+		content: [
+			'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines',
+		],
+		defaultStyle: {
+			font: 'Helvetica',
+		},
+	};
+	const pdfReadableStream = printer.createPdfKitDocument(docDefinition);
+	pdfReadableStream.end();
+	const path = join(dirname(fileURLToPath(import.meta.url)), 'example.pdf');
+	await asyncPipeline(pdfReadableStream, createWriteStream(path));
+	console.log('ok');
+	return asyncPipeline;
+};
+
+netflixRounter.get('/pdfasync', async (req, res, next) => {
+	try {
+		console.log('ok');
+		const path = await generatePDFAsync();
+		console.log('******');
+		res.send(path);
+	} catch (error) {
+		next(error);
+		console.log(error);
+	}
+});
+
+//////////////////////
 
 export default netflixRounter;
