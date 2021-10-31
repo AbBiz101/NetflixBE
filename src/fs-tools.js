@@ -35,22 +35,36 @@ const fonts = {
 const printer = new PdfPrinter(fonts);
 
 export const generetPDFMediafile = async (data) => {
-	const response = await axios.get(data.Poster, {
-		responseType: 'arraybuffer',
-	});
-	const base64 = response.toString('base64');
+	let imagePart = {};
+	if (data.Poster) {
+		const response = await axios.get(data.Poster, {
+			responseType: 'arraybuffer',
+		});
+		const imgNameURL = data.Poster.split('/');
+		const imgName = imgNameURL[imgNameURL.length - 1];
+		const [id, extention] = imgName.split('.');
+		const base64 = response.toString('base64');
+		const base64Image = `data:image/${extention};base64,${base64}`;
+		imagePart = { image: base64Image, width: 500, margin: [0, 0, 0, 40] };
+	}
+
 	const docDefinition = {
 		content: [
+			//imagePart,
 			{
 				text: striptags(data.Title),
 				fontSize: 25,
 				bold: true,
 				margin: [0, 0, 0, 10],
 			},
-			{ text: striptags(data.Year), bold: true, margin: [0, 0, 0, 10] },
-			{ text: striptags(data.Type), margin: [0, 0, 0, 10] },
+			{
+				text: striptags(data.Year),
+				fontSize: 15,
+				bold: true,
+				margin: [0, 0, 0, 10],
+			},
+			{ text: striptags(data.Type), fontSize: 15, margin: [0, 0, 0, 10] },
 		],
-		//content: [{ text: 'dsdsadkbfkjfLAKFB.B.ABFfA' }],
 		defaultStyle: {
 			font: 'Helvetica',
 		},
@@ -93,7 +107,8 @@ export const generatePDFAsync = async (data) => {
 	const pdfReadableStream = printer.createPdfKitDocument(
 		docDefinition,
 		options,
-	);
+    );
+    
 	// pdfReadableStream.pipe(fs.createWriteStream('document.pdf')); // old syntax for piping
 	// pipeline(pdfReadableStream, fs.createWriteStream('document.pdf')) // new syntax for piping (we don't want to pipe pdf into file on disk right now)
 	pdfReadableStream.end();

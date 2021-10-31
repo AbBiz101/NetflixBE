@@ -18,6 +18,9 @@ import {
 	pdfMediaStream,
 	generetPDFMediafile,
 } from '../fs-tools.js';
+import PdfPrinter from 'pdfmake';
+import striptags from 'striptags';
+import axios from 'axios';
 
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
@@ -26,7 +29,15 @@ const cloudinaryStorage = new CloudinaryStorage({
 	},
 });
 
+const fonts = {
+	Helvetica: {
+		normal: 'Helvetica',
+		bold: 'Helvetica-Bold',
+	},
+};
+
 const netflixRounter = express.Router();
+
 //......................post ....media.....poster......review.............
 
 netflixRounter.post('/', mediaValidator, async (req, res, next) => {
@@ -187,12 +198,11 @@ netflixRounter.get('/:id/pdf', async (req, res, next) => {
 	try {
 		const allMedias = await getMedia();
 		const [singleMedias] = allMedias.filter((p) => p.imdbID === req.params.id);
+
 		const pdfStream = await generetPDFMediafile(singleMedias);
 		res.setHeader('Content-Type', 'application/pdf');
 		pdfStream.pipe(res);
 		pdfStream.end();
-
-		//res.send(singleMedias);
 	} catch (error) {
 		next(error);
 	}
