@@ -1,12 +1,23 @@
 import multer from 'multer';
 import uniqid from 'uniqid';
+import { createGzip } from 'zlib';
 import express from 'express';
+import { pipeline } from 'stream';
 import createHttpError from 'http-errors';
 import { v2 as cloudinary } from 'cloudinary';
 import { validationResult } from 'express-validator';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { mediaValidator, reviewValidator } from '../server/validator.js';
-import { getMedia, getReviews, writeMedia, writeReviews } from '../fs-tools.js';
+import {
+	getMedia,
+	getReviews,
+	writeMedia,
+	writeReviews,
+	readMediaStream,
+	readReviewsStream,
+	pdfMediaStream,
+	generetPDFMediafile,
+} from '../fs-tools.js';
 
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
@@ -150,6 +161,57 @@ netflixRounter.put(
 		}
 	},
 );
+
+//......................download ....PDF.....JSON......CSV.............
+
+netflixRounter.get('/download/JSON', async (req, res, next) => {
+	try {
+		res.setHeader(
+			'Content-Disposition',
+			'attachment; filename=All_Medias.json',
+		);
+
+		const source = readMediaStream();
+		const transform = createGzip(); // if u want to make it comprossed file add this =>  filename=All_Medias.json.gz  and (source,transform ,destination,)
+		const destination = res;
+
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
+	} catch (error) {
+		next(error);
+	}
+});
+
+netflixRounter.get('/:id/pdf', async (req, res, next) => {
+	try {
+		const allMedias = await getMedia();
+		const [singleMedias] = allMedias.filter((p) => p.imdbID === req.params.id);
+		const pdfStream = await generetPDFMediafile(singleMedias);
+		res.setHeader('Content-Type', 'application/pdf');
+		pdfStream.pipe(res);
+		pdfStream.end();
+
+		//res.send(singleMedias);
+	} catch (error) {
+		next(error);
+	}
+});
+
+netflixRounter.get('/download/PDF', (req, res, next) => {
+	try {
+		res.setHeader('Content-Disposition', 'attachment; filename=All_Medias.pdf');
+
+		const source = pdfMediaStream();
+		const destination = res;
+
+		pipeline(source, destination, (err) => {
+			if (err) next(err);
+		});
+	} catch (error) {
+		next(error);
+	}
+});
 
 //......................delete ....media.....poster......review.............
 
